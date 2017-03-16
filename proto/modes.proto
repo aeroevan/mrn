@@ -1,0 +1,71 @@
+syntax = "proto3";
+package mrn;
+
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/timestamp.proto";
+
+message ModeSMessage {
+    /** Timestamp of the message */
+    google.protobuf.Timestamp time = 1;
+    /** hex mode s address */
+    string addr = 2;
+    enum AddrType {
+        UNKNOWN = 0;
+        ADSB_ICAO = 1;
+        ADSB_ICAO_NT = 2;
+        ADSR_ICAO = 3;
+        TISB_ICAO = 4;
+        ADSB_OTHER = 5;
+        ADSR_OTHER = 6;
+        TISB_TRACKFILE = 7;
+        TISB_OTHER = 8;
+    }
+    /** hex mode s type */
+    AddrType addr_type = 3;
+    /** Binary message (corrected). */
+    string msg = 4;
+    /** RSSI, in the range [0..1], as a fraction of full-scale power */
+    double signal_level = 5;
+    google.protobuf.DoubleValue latitude = 6;
+    google.protobuf.DoubleValue longitude = 7;
+    google.protobuf.Int32Value altitude = 8;
+    enum AltitudeUnit {
+        NO_ALTITUDE = 0;
+        FEET = 1;
+        METERS = 2;
+    }
+    AltitudeUnit altitude_unit = 9;
+    enum AltitudeType {
+        NO_ALTITUDE_TYPE = 0;
+        BAROMETRIC = 1;
+        GNSS = 2;
+    }
+    AltitudeType altitude_type = 10;
+    google.protobuf.Int32Value gnss_delta = 11;
+    google.protobuf.Int32Value heading = 12;
+    enum HeadingType {
+        NO_HEADING_TYPE = 0;
+        TRUE = 1;
+        MAGNETIC = 2;
+    }
+    HeadingType heading_type = 13;
+    google.protobuf.Int32Value speed = 14;
+    enum SpeedType {
+        NONE = 0;
+        GROUNDSPEED = 1;
+        IAS = 2;
+        TAS = 3;
+    }
+    SpeedType speed_type = 15;
+    google.protobuf.Int32Value vert_rate = 16;
+    AltitudeType vert_rate_source = 17;
+    google.protobuf.StringValue sqawk = 18;
+    google.protobuf.StringValue callsign = 19;
+    enum AirGround {
+        UNCERTAIN = 0;
+        INVALID = 1;
+        GROUND = 2;
+        AIRBORNE = 3;
+    }
+    AirGround airground = 20;
+}

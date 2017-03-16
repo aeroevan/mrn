@@ -1,0 +1,50 @@
+syntax = "proto3";
+package mrn;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/wrappers.proto";
+
+message TPV {
+  /** NMEA mode: %d, 0=no mode value yet seen, 1=no fix, 2=2D, 3=3D. */
+  enum NEMA {
+    NO_MODE_VALUE = 0;
+    NO_FIX = 1;
+    FIX_2D = 2;
+    FIX_3D = 3;
+  }
+  NEMA mode = 1;
+
+  /** Time (UTC) in ms since epoch. May be absent if mode is not 2 or 3. */
+  google.protobuf.Timestamp time = 2;
+
+  /** Estimated timestamp error (seconds, 95% confidence). Present if time is present. */
+  google.protobuf.Duration ept = 3;
+
+  /** Latitude in degrees: +/- signifies North/South. Present when mode is 2 or 3. */
+  google.protobuf.DoubleValue lat = 4;
+  /** Longitude in degrees: +/- signifies East/West. Present when mode is 2 or 3. */
+  google.protobuf.DoubleValue lon = 5;
+  /** Altitude in meters. Present if mode is 3. */
+  google.protobuf.DoubleValue alt = 6;
+
+  /** Longitude error estimate in meters, 95% confidence. Present if mode is 2 or 3 and DOPs can be calculated from the satellite view. */
+  google.protobuf.DoubleValue epx = 7;
+  /** Latitude error estimate in meters, 95% confidence. Present if mode is 2 or 3 and DOPs can be calculated from the satellite view. */
+  google.protobuf.DoubleValue epy = 8;
+  /** Estimated vertical error in meters, 95% confidence. Present if mode is 3 and DOPs can be calculated from the satellite view. */
+  google.protobuf.DoubleValue epv = 9;
+
+  /** Course over ground, degrees from true north. */
+  google.protobuf.DoubleValue track = 10;
+  /** Speed over ground, meters per second. */
+  google.protobuf.DoubleValue speed = 11;
+  /** Climb (positive) or sink (negative) rate, meters per second. */
+  google.protobuf.DoubleValue climb = 12;
+  /** Direction error estimate in degrees, 95% confidence. */
+  google.protobuf.DoubleValue epd = 13;
+  /** Speed error estinmate in meters/sec, 95% confidence. */
+  google.protobuf.DoubleValue eps = 14;
+  /** Climb/sink error estimate in meters/sec, 95% confidence. */
+  google.protobuf.DoubleValue epc = 15;
+}

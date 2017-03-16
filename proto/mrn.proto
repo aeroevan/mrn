@@ -1,0 +1,21 @@
+syntax = "proto3";
+package mrn;
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "gps.proto";
+import "modes.proto";
+import "receiver.proto";
+
+message AdsbLog {
+    /** Timestamp of the generated record */
+    google.protobuf.Timestamp time = 1;
+    Receiver receiver = 2;
+    /** Current position of the station */
+    TPV position = 3;
+    repeated ModeSMessage messages = 4;
+}
+
+service mrn {
+  rpc LogMessages(AdsbLog) returns (google.protobuf.Empty) {}
+}

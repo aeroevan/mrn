@@ -1,0 +1,12 @@
+syntax = "proto3";
+package mrn;
+
+import "google/protobuf/wrappers.proto";
+
+
+message Receiver {
+    /** Serial number of the raspberry pi */
+    google.protobuf.StringValue serial = 1;
+    google.protobuf.StringValue hostname = 2;
+    google.protobuf.StringValue mac_address = 3;
+}
