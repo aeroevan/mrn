@@ -3,14 +3,17 @@ package main
 import "fmt"
 import "net"
 import "flag"
+import "time"
 import "bufio"
 import "strings"
 import "strconv"
 import mrn "github.com/aeroevan/mrn/proto"
+import "github.com/stratoberry/go-gpsd"
 
 //import proto "github.com/golang/protobuf/proto"
 import timestamp "github.com/golang/protobuf/ptypes/timestamp"
 import ptw "github.com/golang/protobuf/ptypes/wrappers"
+import ptypes "github.com/golang/protobuf/ptypes"
 
 func adsb(connstr string) <-chan string {
 	out := make(chan string)
@@ -186,6 +189,33 @@ func mode_s_channel(in <-chan string) <-chan *mrn.ModeSMessage {
 	return out
 }
 
+func parse_nema_mode(mode gpsd.Mode) mrn.TPV_NEMA {
+	switch mode {
+	case gpsd.NoFix:
+		return mrn.TPV_NO_FIX
+	case gpsd.Mode2D:
+		return mrn.TPV_FIX_2D
+	case gpsd.Mode3D:
+		return mrn.TPV_FIX_3D
+	case gpsd.NoValueSeen:
+		return mrn.TPV_NO_MODE_VALUE
+	}
+	return mrn.TPV_NO_MODE_VALUE
+}
+
+func parse_tpv(tpv *gpsd.TPVReport) *mrn.TPV {
+	out := new(mrn.TPV)
+	out.Mode = parse_nema_mode(tpv.Mode)
+	ts, err := ptypes.TimestampProto(tpv.Time)
+	if err != nil {
+		out.Time = ts
+	}
+	out.Ept = ptypes.DurationProto(time.Duration(int64(tpv.Ept * 1000000000)))
+	l := tpv.Lat
+	out.Lat = &ptw.DoubleValue{Value: l}
+	return out
+}
+
 var (
 	dump1090 = flag.String("dump1090", "localhost:30002", "The raw dump1090 host:port")
 )
@@ -194,7 +224,21 @@ func main() {
 	flag.Parse()
 	msgs := adsb(*dump1090)
 	msms := mode_s_channel(msgs)
+	var gps *gpsd.Session
+	var err error
+
+	gps.AddFilter("TPV", func(r interface{}) {
+		tpv := r.(*gpsd.TPVReport)
+		fmt.Println("TPV", tpv.Mode, tpv.Time)
+	})
+
+	if gps, err = gpsd.Dial(gpsd.DefaultAddress); err != nil {
+		panic(fmt.Sprintf("Failed to connect to GPSD: %s", err))
+	}
+
+	done := gps.Watch()
 	for msm := range msms {
 		fmt.Println(msm)
 	}
+	<-done
 }
